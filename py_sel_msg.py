@@ -2,6 +2,7 @@ import sys
 from openpyxl import Workbook
 import json
 import time
+import datetime
 import pdb
 
 
@@ -21,40 +22,40 @@ def get_raw_data():
             parts_list = []
             for line in sel:
                 parts = line.split(':')
-                print(f"parts 0: <{parts[0]}>")
+                #print(f"parts 0: <{parts[0]}>")
                 if "id" in parts[0]:
                     pass
                 elif "\"date\"" == parts[0].strip():
                     st = ':'.join(part for part in parts[1:])
                     sts = st.strip(",.\t\n")
                     parts_list.append(sts)
-                    print(f"Date: <{sts}>")
+                    #print(f"Date: <{sts}>")
                 elif "\"owner\"" == parts[0].strip():
                     st = ':'.join(part for part in parts[1:])
                     sts = st.strip(",.\t\n")
                     parts_list.append(sts)
-                    print(f"Owner: <{sts}>")
+                    #print(f"Owner: <{sts}>")
                 elif "\"name\"" == parts[0].strip():
                     st = ':'.join(part for part in parts[1:])
                     sts = st.strip(",.\t\n")
                     parts_list.append(sts)
-                    print(f"name: <{sts}>")
+                    #print(f"name: <{sts}>")
                 elif "\"desc\"" == parts[0].strip():
                     st = ':'.join(part for part in parts[1:])
                     sts = st.strip(",.\t\n")
                     parts_list.append(sts)
-                    print(f"desc: <{sts}>")
+                    #print(f"desc: <{sts}>")
                 elif "\"t\"" == parts[0].strip():
                     st = ':'.join(part for part in parts[1:])
                     sts = st.strip(",.\t\n")
                     parts_list.append(sts)
-                    print(f"t: <{sts}>")
+                    #print(f"t: <{sts}>")
                 elif "\"se\"" == parts[0].strip():
                     st = ':'.join(part for part in parts[1:])
                     sts = st.strip(",.\t\n")
                     parts_list.append(sts)
-                    print(f"se: <{sts}>")
-                    print(f"parts_list: <{parts_list}>")
+                    #print(f"se: <{sts}>")
+                    #print(f"parts_list: <{parts_list}>")
                     sel_dict[id] = parts_list
                     parts_list = []
                     id += 1
@@ -112,14 +113,72 @@ def fix_json(jfile):
     #            
     
 
+def get_datetime(val_list):
+    newt = val_list[0].strip("\"")
+    return datetime.datetime.strptime(newt, '%Y-%m-%d %H:%M:%S')
+
 
 if __name__ == "__main__":
     sel_dict, msg_dict = get_raw_data()
     #print(f"sel_dict: {sel_dict}")
     #print(f"msg_dict: {msg_dict}")
-    for k,v in sel_dict.items():
-        print(f"Key: {k}: Value {v}")
-        time.sleep(1)
-
-
-
+    print(f"Sel entries: {len(sel_dict.items())}")
+    print(f"Msg entries: {len(msg_dict.items())}")
+    sel_iter =  iter(sel_dict.values())
+    msg_iter =  iter(msg_dict.values())
+    current_sel_val = next(sel_iter)
+    current_msg_val = next(msg_iter)
+    print(f"Sel 0: {current_sel_val}")
+    print(f"Msg 0: {current_msg_val}")
+    current_sel_time = get_datetime(current_sel_val)
+    current_msg_time = get_datetime(current_msg_val)
+    print(f"Sel 0 dt: {current_sel_time}")
+    print(f"Msg 0 dt: {current_msg_time}")
+    loop_sel = True
+    loop_msg = True
+    while loop_sel or loop_msg:
+        if loop_sel and loop_msg:
+            if current_sel_time <= current_msg_time:
+                print("sel time less than msg time")
+                while current_sel_time <= current_msg_time:
+                    print(f"current_sel_val: {current_sel_val}")
+                    try: 
+                        current_sel_val = next(sel_iter)
+                        current_sel_time = get_datetime(current_sel_val)
+                    except StopIteration:
+                        loop_sel = False
+                        print("No more sel values")
+                        break
+            else:
+                print("sel time greater than msg time")
+                while current_msg_time < current_sel_time:
+                    print(f"current_msg_val: {current_msg_val}")
+                    try:
+                        current_msg_val = next(msg_iter)
+                        current_msg_time = get_datetime(current_msg_val)
+                    except StopIteration:
+                        loop_msg = False
+                        print("No more msg values")
+                        break
+        elif loop_sel and not loop_msg:
+            while loop_sel:
+                try: 
+                    current_sel_val = next(sel_iter)
+                    current_sel_time = get_datetime(current_sel_val)
+                    print(f"current_sel_val: {current_sel_val}")
+                except StopIteration:
+                    loop_sel = False
+                    print("No more sel values")
+                    break
+        elif not loop_sel and loop_msg:
+            while loop_msg:
+                try: 
+                    current_msg_val = next(msg_iter)
+                    current_msg_time = get_datetime(current_msg_val)
+                    print(f"current_msg_val: {current_msg_val}")
+                except StopIteration:
+                    loop_msg = False
+                    print("No more msg values")
+                    break
+        else:
+            break
