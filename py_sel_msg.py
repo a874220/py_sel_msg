@@ -117,13 +117,70 @@ def get_datetime(val_list):
     newt = val_list[0].strip("\"")
     return datetime.datetime.strptime(newt, '%Y-%m-%d %H:%M:%S')
 
+#     A      B       C          D      E           F
+#  [ date, owner, sensor_name, desc, sensor_type, severity ]
+#
+def write_sel(row, ws, current_sel_val):
+    if not isinstance(current_sel_val, list):
+        print("ERROR: current_sel_val is not list")
+        sys.exit(1)
+    else:
+        try:
+            rows = str(row) 
+        except ValueError:
+            print("ERROR: Could not convert row to string")
+            sys.exit(1)
+        else:
+            rowcols = [col+rows for col in ["A", "B", "C", "D", "E", "F"]]
+            for rc, rd in zip(rowcols, current_sel_val):
+                ws[rc] = rd
+
+
+#     H     I           J
+#  [ date, event_type, desc]
+#
+def write_msg(row, ws, current_msg_val):
+    if not isinstance(current_msg_val, list):
+        print("ERROR: current_msg_val is not list")
+        sys.exit(1)
+    else:
+        try:
+            rows = str(row) 
+        except ValueError:
+            print("ERROR: Could not convert row to string")
+            sys.exit(1)
+        else:
+            rowcols = [col+rows for col in ["H", "I", "J"]]
+            for rc, rd in zip(rowcols, current_msg_val):
+                ws[rc] = rd
+
+
+
+def write_hdr(row, ws):
+    try:
+        rows = str(row) 
+    except ValueError:
+        print("ERROR: Could not convert row to string")
+        sys.exit(1)
+    else:
+        #rowcols = ["A"+row, "B"+row, "C"+row, "D"+row, "E"+row, "F"+row, "H"+row, "I"+row, "J"+row]
+        rowcols = [col+rows for col in ["A", "B", "C", "D", "E", "F", "H", "I", "J"]]
+        rowdata = ["DATE", "OWNER", "SENSOR_NAME", "DESCRIPTION", "SENSOR TYPE", "SEVERITY", "DATE", "EVENT TYPE", "DESCRIPTION"]
+        for rc, rd in zip(rowcols, rowdata):
+            ws[rc] = rd
+
 
 if __name__ == "__main__":
+    row = 1
+    wb = Workbook()
+    ws = wb.active
+    write_hdr(row, ws)
+    row = row + 2
     sel_dict, msg_dict = get_raw_data()
     #print(f"sel_dict: {sel_dict}")
     #print(f"msg_dict: {msg_dict}")
-    print(f"Sel entries: {len(sel_dict.items())}")
-    print(f"Msg entries: {len(msg_dict.items())}")
+    print(f"Number of Sel entries: {len(sel_dict.items())}")
+    print(f"Number of Msg entries: {len(msg_dict.items())}")
     sel_iter =  iter(sel_dict.values())
     msg_iter =  iter(msg_dict.values())
     current_sel_val = next(sel_iter)
@@ -139,9 +196,11 @@ if __name__ == "__main__":
     while loop_sel or loop_msg:
         if loop_sel and loop_msg:
             if current_sel_time <= current_msg_time:
-                print("sel time less than msg time")
+                #print("sel time less than msg time")
                 while current_sel_time <= current_msg_time:
-                    print(f"current_sel_val: {current_sel_val}")
+                    print(f"SEL: {current_sel_val}")
+                    write_sel(row, ws, current_sel_val)
+                    row = row + 1
                     try: 
                         current_sel_val = next(sel_iter)
                         current_sel_time = get_datetime(current_sel_val)
@@ -150,9 +209,11 @@ if __name__ == "__main__":
                         print("No more sel values")
                         break
             else:
-                print("sel time greater than msg time")
+                #print("sel time greater than msg time")
                 while current_msg_time < current_sel_time:
-                    print(f"current_msg_val: {current_msg_val}")
+                    print(f"MSG: {current_msg_val}")
+                    write_msg(row, ws, current_msg_val)
+                    row = row + 1
                     try:
                         current_msg_val = next(msg_iter)
                         current_msg_time = get_datetime(current_msg_val)
@@ -165,7 +226,9 @@ if __name__ == "__main__":
                 try: 
                     current_sel_val = next(sel_iter)
                     current_sel_time = get_datetime(current_sel_val)
-                    print(f"current_sel_val: {current_sel_val}")
+                    print(f"SEL: {current_sel_val}")
+                    write_sel(row, ws, current_sel_val)
+                    row = row + 1
                 except StopIteration:
                     loop_sel = False
                     print("No more sel values")
@@ -175,10 +238,14 @@ if __name__ == "__main__":
                 try: 
                     current_msg_val = next(msg_iter)
                     current_msg_time = get_datetime(current_msg_val)
-                    print(f"current_msg_val: {current_msg_val}")
+                    print(f"MSG: {current_msg_val}")
+                    write_msg(row, ws, current_msg_val)
+                    row = row + 1
                 except StopIteration:
                     loop_msg = False
                     print("No more msg values")
                     break
         else:
             break
+
+    wb.save("sel_msg.xlsx")
