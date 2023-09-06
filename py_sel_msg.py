@@ -11,8 +11,8 @@ def get_raw_data():
     sel_dict = {}
     msg_dict = {}
 
-    if len(sys.argv) < 3:
-        print("Usage: py_sel_msg <sel_js_file> <msg_js_file>")
+    if len(sys.argv) < 4:
+        print("Usage: py_sel_msg <sel_js_file> <msg_js_file> <xlsx file>")
         sys.exit(1)
     else:
         #pdb.set_trace()
@@ -223,6 +223,10 @@ if __name__ == "__main__":
                         break
         elif loop_sel and not loop_msg:
             while loop_sel:
+                # If we get there should be a pending value
+                print(f"SEL: {current_sel_val}")
+                write_sel(row, ws, current_sel_val)
+                row = row + 1
                 try: 
                     current_sel_val = next(sel_iter)
                     current_sel_time = get_datetime(current_sel_val)
@@ -235,6 +239,10 @@ if __name__ == "__main__":
                     break
         elif not loop_sel and loop_msg:
             while loop_msg:
+                # If we get here there should be a pending value
+                print(f"MSG: {current_msg_val}")
+                write_msg(row, ws, current_msg_val)
+                row = row + 1
                 try: 
                     current_msg_val = next(msg_iter)
                     current_msg_time = get_datetime(current_msg_val)
@@ -248,4 +256,5 @@ if __name__ == "__main__":
         else:
             break
 
-    wb.save("sel_msg.xlsx")
+    fname = sys.argv[3] + ".xlsx"
+    wb.save(fname)
