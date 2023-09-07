@@ -115,7 +115,12 @@ def fix_json(jfile):
 
 def get_datetime(val_list):
     newt = val_list[0].strip("\"")
-    return datetime.datetime.strptime(newt, '%Y-%m-%d %H:%M:%S')
+    try:
+        return datetime.datetime.strptime(newt, '%Y-%m-%d %H:%M:%S')
+    except Exception as e:
+        print(f"ERROR: converting datetime: {e}")
+        return datetime.datetime.strptime("1970-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
+
 
 #     A      B       C          D      E           F
 #  [ date, owner, sensor_name, desc, sensor_type, severity ]
