@@ -119,7 +119,7 @@ def get_datetime(val_list):
         return datetime.datetime.strptime(newt, '%Y-%m-%d %H:%M:%S')
     except Exception as e:
         print(f"ERROR: converting datetime: {e}")
-        return datetime.datetime.strptime("1970-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
+        return datetime.datetime.strptime("1959-02-02 00:00:00", '%Y-%m-%d %H:%M:%S')
 
 
 #     A      B       C          D      E           F
