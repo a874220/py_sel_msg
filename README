@@ -1,0 +1,10 @@
+
+# This script takes a sel.json.js and a messages.json.js
+# and produces an excel spreadsheet containing a side-by-side
+# listing of the logs.
+# Columns A-F contain sel entries
+# Columns H-J contain msg entries
+#
+# The entries are time ordered.
+#
+# You need to pip install openpyxl
